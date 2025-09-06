@@ -1,0 +1,93 @@
+/* Container for the entire marquee */
+.brand-marquee-container {
+  width: 100%;
+  overflow-x: hidden;
+  padding: 20px 0;
+  background: linear-gradient(to right, #fff3cd, #fff8e1);
+  position: relative;
+  box-sizing: border-box;
+  border-top: 2px solid #ffe58f;
+  border-bottom: 2px solid #ffe58f;
+}
+
+/* Marquee row */
+.brand-marquee-row {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Track that moves logos endlessly */
+.brand-marquee-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  animation: scroll-marquee 25s linear infinite;
+  width: max-content;
+  gap: 40px;
+}
+
+/* Brand logo styles */
+.brand-logo {
+  height: 80px;
+  width: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #fff;
+  padding: 8px;
+}
+
+/* Logo hover scale effect */
+.brand-logo:hover {
+  transform: scale(1.1);
+}
+
+/* Keyframes for infinite scroll */
+@keyframes scroll-marquee {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Custom toast alert */
+.custom-toast {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #facc15; /* warm yellow */
+  color: #1f2937;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 1000;
+  animation: fadeout 0.4s ease-out 0.4s forwards;
+}
+
+/* Toast fade out animation */
+@keyframes fadeout {
+  0% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Prevent horizontal scroll on body */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: #fffef9;
+}

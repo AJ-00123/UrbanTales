@@ -1,0 +1,37 @@
+/* Remove default padding/margin and prevent horizontal scroll */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9fafb;
+  overflow-x: hidden;
+}
+
+/* Optional: Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide input outline on click (still accessible via keyboard) */
+input:focus,
+button:focus,
+textarea:focus {
+  outline: none;
+}
+
+/* Button transitions (if not using Tailwind transition classes) */
+button {
+  transition: background-color 0.3s ease;
+}
+
+/* Prevent form shrinking on mobile */
+form {
+  width: 100%;
+}
+
+/* Responsive image container (if needed) */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

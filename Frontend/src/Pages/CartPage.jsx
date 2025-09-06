@@ -9,19 +9,20 @@ export default function CartPage() {
   const [subtotal, setSubtotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const storedUser = JSON.parse(localStorage.getItem('user'));
-  const userId = storedUser?.id;
-  const navigate = useNavigate(); // ✅ Moved outside of return
+  // JWT token only
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!userId) {
+    if (!token) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    fetch(`http://localhost:3000/api/cart/${userId}`)
+    fetch("http://localhost:3000/api/cart", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(res => res.json())
       .then(data => {
         setCartItems(data.items || []);
@@ -29,9 +30,10 @@ export default function CartPage() {
       })
       .catch(err => {
         console.error('Cart load error:', err);
+        setCartItems([]);
         setLoading(false);
       });
-  }, [userId]);
+  }, [token]);
 
   useEffect(() => {
     let total = 0;
@@ -46,26 +48,24 @@ export default function CartPage() {
 
   const updateQty = (itemId, qty) => {
     if (qty < 1) qty = 1;
-    fetch(`http://localhost:3000/api/cart/update`, {
+    fetch("http://localhost:3000/api/cart/update", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, itemId, qty })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ itemId, qty })
     })
       .then(() => {
         setCartItems(prev =>
-          prev.map(item =>
-            item.id === itemId ? { ...item, qty } : item
-          )
+          prev.map(item => item.id === itemId ? { ...item, qty } : item)
         );
       })
       .catch(err => console.error('Update failed', err));
   };
 
   const deleteItem = (itemId) => {
-    fetch(`http://localhost:3000/api/cart/remove`, {
+    fetch("http://localhost:3000/api/cart/remove", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, itemId })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ itemId })
     })
       .then(() => {
         setCartItems(prev => prev.filter(item => item.id !== itemId));
@@ -73,13 +73,7 @@ export default function CartPage() {
       .catch(err => console.error('Delete failed', err));
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-white">
-        <HashLoader color="#070A52" size={80} />
-      </div>
-    );
-  }
+  if (loading) return <div className="flex items-center justify-center h-screen"><HashLoader color="#070A52" size={80} /></div>;
 
   return (
     <>
@@ -87,7 +81,7 @@ export default function CartPage() {
       <div className="w-[90%] max-w-[900px] mx-auto my-10 md:my-20 bg-white p-6 md:p-10 rounded-lg shadow-lg">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">Shopping Cart</h1>
 
-        {!userId ? (
+        {!token ? (
           <p className="text-center text-lg text-gray-600 mt-6">Please login to view your cart.</p>
         ) : cartItems.length === 0 ? (
           <p className="text-center text-lg text-gray-600">Your cart is empty.</p>
@@ -107,30 +101,11 @@ export default function CartPage() {
 
                 <div className="flex items-center space-x-3 md:space-x-4 flex-wrap justify-center md:justify-end w-full md:w-auto">
                   <div className="flex items-center border border-gray-300 rounded-md">
-                    <button
-                      onClick={() => updateQty(item.id, item.qty - 1)}
-                      className="px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-l-md transition-colors"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value={item.qty}
-                      min={1}
-                      onChange={(e) => updateQty(item.id, parseInt(e.target.value))}
-                      className="w-12 text-center border-x border-gray-300 py-1 text-gray-800 focus:outline-none"
-                    />
-                    <button
-                      onClick={() => updateQty(item.id, item.qty + 1)}
-                      className="px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-r-md transition-colors"
-                    >
-                      +
-                    </button>
+                    <button onClick={() => updateQty(item.id, item.qty - 1)} className="px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-l-md transition-colors">-</button>
+                    <input type="number" value={item.qty} min={1} onChange={(e) => updateQty(item.id, parseInt(e.target.value))} className="w-12 text-center border-x border-gray-300 py-1 text-gray-800 focus:outline-none" />
+                    <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-3 py-1 text-gray-700 hover:bg-gray-100 rounded-r-md transition-colors">+</button>
                   </div>
-                  <button
-                    onClick={() => deleteItem(item.id)}
-                    className="flex items-center text-red-500 hover:text-red-700 transition-colors text-sm md:text-base mt-2 md:mt-0"
-                  >
+                  <button onClick={() => deleteItem(item.id)} className="flex items-center text-red-500 hover:text-red-700 transition-colors text-sm md:text-base mt-2 md:mt-0">
                     <span className="mr-1">🗑</span> Delete
                   </button>
                 </div>
@@ -142,11 +117,7 @@ export default function CartPage() {
                 Subtotal ({itemCount} items): <strong className="text-blue-600">₹{subtotal.toFixed(2)}</strong>
               </div>
 
-              <button
-                className="bg-blue-600 text-white px-8 py-3 mt-6 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                disabled={itemCount === 0}
-                onClick={() => navigate('/checkout')}
-              >
+              <button className="bg-blue-600 text-white px-8 py-3 mt-6 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled={itemCount === 0} onClick={() => navigate('/checkout')}>
                 Proceed to Pay
               </button>
             </div>
